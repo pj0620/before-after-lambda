@@ -45,24 +45,50 @@ var SECRET_KEY = process.env.SECRET_KEY;
 if (!SECRET_KEY) {
     throw Error("SECRET_KEY not set!");
 }
-function getPending() {
+var SYNC_PERIOD = parseInt(process.env.SYNC_PERIOD, 10);
+if (!SYNC_PERIOD) {
+    throw Error("SYNC_PERIOD not set!");
+}
+function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var resp;
+        var resp, lastUpdate, updateInterval, respUpdate;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, (0, axios_1["default"])({
                         method: 'get',
-                        url: API_BASE_URL + "/update/status/pending",
+                        url: API_BASE_URL + "/update/status/last",
                         headers: {
                             'x-update-secret-key': SECRET_KEY
                         }
                     })];
                 case 1:
                     resp = _a.sent();
-                    console.log(resp);
+                    if (resp.status !== 200) {
+                        throw Error("got " + resp.status + " error when calling " + API_BASE_URL + "/update/status/last");
+                    }
+                    lastUpdate = resp.data[0];
+                    if (!lastUpdate.finished) {
+                        console.log("last update at " + lastUpdate.startedAt + " did not finish, overwriting");
+                    }
+                    updateInterval = Math.floor(Date.now() / 1000) - lastUpdate.before;
+                    if (updateInterval > SYNC_PERIOD + 60) {
+                        console.warn("api limit previously hit, possible sync issues");
+                    }
+                    return [4 /*yield*/, (0, axios_1["default"])({
+                            method: 'get',
+                            url: API_BASE_URL + "/update?interval=" + updateInterval,
+                            headers: {
+                                'x-update-secret-key': SECRET_KEY
+                            }
+                        })];
+                case 2:
+                    respUpdate = _a.sent();
+                    if (respUpdate.status !== 204) {
+                        throw Error("got " + respUpdate.status + " error when calling " + API_BASE_URL + "/update");
+                    }
                     return [2 /*return*/];
             }
         });
     });
 }
-getPending();
+main();
