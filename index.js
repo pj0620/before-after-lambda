@@ -74,6 +74,10 @@ function main() {
                     if (updateInterval > SYNC_PERIOD + 60) {
                         console.warn("api limit previously hit, possible sync issues");
                     }
+                    if (updateInterval > 3 * SYNC_PERIOD) {
+                        console.warn("last update occured too long ago ".concat(updateInterval, "s, reseting to \n      3 sync_periods ").concat(3 * SYNC_PERIOD));
+                        updateInterval = 3 * SYNC_PERIOD;
+                    }
                     return [4 /*yield*/, (0, axios_1["default"])({
                             method: 'get',
                             url: API_BASE_URL + "/update?interval=" + updateInterval,

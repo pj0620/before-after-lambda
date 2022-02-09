@@ -32,9 +32,15 @@ async function main() {
     console.log("last update at " + lastUpdate.startedAt + " did not finish, overwriting");
   }
 
-  const updateInterval = Math.floor(Date.now() / 1000) - lastUpdate.before;
+  let updateInterval = Math.floor(Date.now() / 1000) - lastUpdate.before;
   if (updateInterval > SYNC_PERIOD + 60) {
     console.warn("api limit previously hit, possible sync issues");
+  }
+
+  if (updateInterval > 3*SYNC_PERIOD) {
+    console.warn(`last update occured too long ago ${updateInterval}s, reseting to 
+      3 sync_periods ${3*SYNC_PERIOD}`);
+    updateInterval = 3*SYNC_PERIOD;
   }
 
   const respUpdate = await axios({
