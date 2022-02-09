@@ -29,7 +29,7 @@ async function main() {
 
   const lastUpdate = resp.data[0];
   if (!lastUpdate.finished) {
-    console.log("last update at " + lastUpdate.startedAt + " did not finish, overwriting");
+    console.warn("last update at " + lastUpdate.startedAt + " did not finish, overwriting");
   }
 
   let updateInterval = Math.floor(Date.now() / 1000) - lastUpdate.before;
